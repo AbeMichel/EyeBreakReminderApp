@@ -1,6 +1,13 @@
 import tkinter as tk
 from tkinter import Toplevel
+import os
+import configparser
+from playsound import playsound
 
+CONFIG_PATH = "./config.cfg"
+DEFAULT_TIME_BETWEEN_BREAKS = 20 # minutes
+DEFAULT_BREAK_DURATION = 20  # seconds
+DEFAULT_SOUND_FILE_PATH = "./Assets/chime.mp3"
 
 class BreakApp:
     def __init__(self):
@@ -30,6 +37,8 @@ class BreakApp:
 
         self.time_between_breaks_min = 20
         self.duration_of_breaks_sec = 20
+        self.break_sound = ""
+        self.find_or_make_config(CONFIG_PATH)
 
     def start(self):
         """Starts the reminder cycle."""
@@ -76,7 +85,7 @@ class BreakApp:
 
         update_timer()
 
-    def blank_screen(self, duration_sec):
+    def blank_screen(self, duration_sec: int):
         """Displays a full-screen popup and runs a timer."""
         if self.popup and self.popup.winfo_exists():
             return
@@ -106,6 +115,7 @@ class BreakApp:
             else:
                 self.popup.destroy()  # Close popup when time is up
                 self.popup = None
+                playsound(self.break_sound)
                 if self.running:
                     self.start_break_reminders()  # Start the next reminder
 
@@ -113,6 +123,49 @@ class BreakApp:
 
     def run(self):
         self.root.mainloop()
+    
+    def create_new_config(self, file_path: str):
+        writer = configparser.ConfigParser()
+        writer['Time'] = {
+            'time_between_breaks_in_minutes': str(DEFAULT_TIME_BETWEEN_BREAKS),
+            'duration_of_breaks_in_seconds': str(DEFAULT_BREAK_DURATION)
+        }
+        writer['Audio'] = {
+            'sound_file': DEFAULT_SOUND_FILE_PATH
+        }
+
+        # Ensure path is valid
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+
+        with open(file_path, 'w') as f:
+            writer.write(f)
+
+    def read_config(self, file_path: str):
+        parser = configparser.ConfigParser()
+        parser.read(file_path)
+        self.time_between_breaks_min = float(parser['Time']['time_between_breaks_in_minutes'])
+        self.duration_of_breaks_sec = int(parser['Time']['duration_of_breaks_in_seconds'])
+        self.break_sound = parser['Audio']['sound_file']
+
+        # Verify
+        if self.time_between_breaks_min <= 0:
+            self.time_between_breaks_min = DEFAULT_TIME_BETWEEN_BREAKS
+        if self.duration_of_breaks_sec <= 0:
+            self.duration_of_breaks_sec = DEFAULT_BREAK_DURATION
+        if not os.path.exists(self.break_sound):
+            self.break_sound = ""
+
+    def find_or_make_config(self, config_path: str):
+        if not os.path.exists(config_path):
+            self.create_new_config(config_path)
+        try:
+            self.read_config(config_path)
+        except:
+            self.create_new_config(config_path)
+            self.read_config(config_path)
+
 
 
 def main():
