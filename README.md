@@ -2,7 +2,6 @@
 
 The Break Reminder App is a simple Tkinter-based application designed to help users give their eyes regular breaks during work or study sessions. The app allows you to set a time interval before receiving a reminder to take a break, and it also includes a full-screen popup to remind you to look away and rest your eyes.
 
-### TOC
 ## Table of Contents
 - [Features](#features)
 - [Requirements](#requirements)
