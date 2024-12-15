@@ -62,7 +62,7 @@ The application uses a `.cfg` file to manage settings, allowing users to easily 
 - **`duration_of_breaks_in_seconds`**: The duration in seconds that breaks will last. This must be an integer. Default: `20`.
 
 ### Audio
-- **`sound_file`**: The relative path to the sound file that will play at the end of breaks. Default: `./Assets/chime.mp3`
+- **`sound_file`**: The relative path to the sound file that will play at the end of breaks. Won't play a sound if set blank. Default: `./Assets/chime.mp3`
 
 ## License 
 [MIT License](LICENSE)

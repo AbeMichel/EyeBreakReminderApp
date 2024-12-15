@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import Toplevel
 import os
 import configparser
-from playsound import playsound
+from playsound import playsound, PlaysoundException
 
 CONFIG_PATH = "./config.cfg"
 DEFAULT_TIME_BETWEEN_BREAKS = 20 # minutes
@@ -115,7 +115,11 @@ class BreakApp:
             else:
                 self.popup.destroy()  # Close popup when time is up
                 self.popup = None
-                playsound(self.break_sound)
+                if self.break_sound and os.path.exists(self.break_sound) and os.path.isfile(self.break_sound):
+                    try:
+                        playsound(self.break_sound)
+                    except PlaysoundException as e:
+                        pass  # If the window gets hidden we encounter an error here
                 if self.running:
                     self.start_break_reminders()  # Start the next reminder
 
@@ -162,7 +166,7 @@ class BreakApp:
             self.create_new_config(config_path)
         try:
             self.read_config(config_path)
-        except:
+        except KeyError as e:  # Not all configuration values exist
             self.create_new_config(config_path)
             self.read_config(config_path)
 
