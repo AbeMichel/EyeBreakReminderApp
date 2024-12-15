@@ -1,13 +1,28 @@
 import tkinter as tk
 from tkinter import Toplevel
 import os
+import sys
 import configparser
+import logging
+logging.basicConfig(filename="app.log", level=logging.DEBUG)
+
 from playsound import playsound, PlaysoundException
 
 CONFIG_PATH = "./config.cfg"
 DEFAULT_TIME_BETWEEN_BREAKS = 20 # minutes
 DEFAULT_BREAK_DURATION = 20  # seconds
 DEFAULT_SOUND_FILE_PATH = "./Assets/chime.mp3"
+
+def resource_path(relative_path):
+    """Get the absolute path to a resource"""
+    try:
+        # PyInstaller creates a temp folder to store files
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # If not running as an exe, use the script directory
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 
 class BreakApp:
     def __init__(self):
@@ -38,7 +53,7 @@ class BreakApp:
         self.time_between_breaks_min = 20
         self.duration_of_breaks_sec = 20
         self.break_sound = ""
-        self.find_or_make_config(CONFIG_PATH)
+        self.find_or_make_config(resource_path(CONFIG_PATH))
 
     def start(self):
         """Starts the reminder cycle."""
@@ -151,7 +166,7 @@ class BreakApp:
         parser.read(file_path)
         self.time_between_breaks_min = float(parser['Time']['time_between_breaks_in_minutes'])
         self.duration_of_breaks_sec = int(parser['Time']['duration_of_breaks_in_seconds'])
-        self.break_sound = parser['Audio']['sound_file']
+        self.break_sound = resource_path(parser['Audio']['sound_file'])
 
         # Verify
         if self.time_between_breaks_min <= 0:
@@ -162,6 +177,7 @@ class BreakApp:
             self.break_sound = ""
 
     def find_or_make_config(self, config_path: str):
+        config_path = resource_path(config_path)
         if not os.path.exists(config_path):
             self.create_new_config(config_path)
         try:
